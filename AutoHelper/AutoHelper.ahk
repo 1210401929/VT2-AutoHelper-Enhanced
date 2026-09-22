@@ -111,7 +111,7 @@ global TXT_BtnOpenChests, TXT_BtnSalvage, TXT_BtnAtanor, TXT_BtnSalvageRed
 global TXT_BtnReroll, TXT_BtnInfo, TXT_BtnStop, TXT_BtnRestart
 global TXT_RecognitionLanguage
 global TXT_RecommendedTitle, TXT_RecommendedText, TXT_WorkflowTitle
-global TXT_TargetProperty1, TXT_TargetProperty2, TXT_AutoMaxTarget, TXT_StartSelectedReroll
+global TXT_TargetProperty1, TXT_TargetProperty2, TXT_AutoMaxTarget, TXT_StartSelectedReroll, TXT_SelectFixedPair
 global TXT_ConfigStatusTitle, TXT_RunStatusTitle, TXT_StatusReady, TXT_StatusIncomplete
 global TXT_StatusWindow, TXT_StatusArea, TXT_StatusButton, TXT_StatusRecognition, TXT_StatusOCR, TXT_StatusTargets
 global TXT_StatusSet, TXT_StatusNotSet, TXT_StatusTested, TXT_StatusNotTested, TXT_StatusSelected
@@ -318,6 +318,7 @@ LoadStrings() {
     TXT_TargetProperty2 := "Target property 2:"
     TXT_AutoMaxTarget := "Automatically require the maximum value shown in the property range"
     TXT_StartSelectedReroll := "START PROPERTY REROLL"
+    TXT_SelectFixedPair := "Choose the item type, then choose one of its valid property pairs. Target value 1 / 2 follow the pair order."
     TXT_ConfigStatusTitle := "Configuration status"
     TXT_RunStatusTitle := "Current run"
     TXT_StatusReady := "Status: Ready to start"
@@ -727,24 +728,20 @@ CreateGUI:
     Gui, Font, c535353 s12 Bold, Segoe UI
     Gui, Add, GroupBox, x440 y145 w530 h290, %TXT_WorkflowTitle%
     Gui, Font, s9 Norm, Segoe UI
-    propertyList := TXT_StatusNotSet "|" GetPropertyDropDownList(CurrentLanguage)
-    Gui, Add, Text, x460 y180 w130 h22, %TXT_TargetProperty1%
-    Gui, Add, DropDownList, x600 y176 w340 vTargetProperty1Display gTargetPropertiesChanged Choose1, %propertyList%
-    Gui, Add, Text, x460 y220 w130 h22, %TXT_TargetProperty2%
-    Gui, Add, DropDownList, x600 y216 w340 vTargetProperty2Display gTargetPropertiesChanged Choose1, %propertyList%
-
-    Gui, Add, Checkbox, x460 y258 w20 h20 vRequireTargetValues gToggleTargetValueControls Checked%RequireTargetValues%
-    Gui, Add, Text, x485 y260 w420 h20, %TXT_MatchPropertyValues%
-    Gui, Add, Checkbox, x485 y287 w440 h22 vAutoMaxTargetValues gToggleTargetValueControls Checked%AutoMaxTargetValues%, %TXT_AutoMaxTarget%
-    Gui, Add, Text, x485 y322 w90 h20, %TXT_TargetValue1%
-    Gui, Add, Edit, x575 y318 w80 h22 vTargetValue1, %TargetValue1%
-    Gui, Add, Text, x685 y322 w90 h20, %TXT_TargetValue2%
-    Gui, Add, Edit, x775 y318 w80 h22 vTargetValue2, %TargetValue2%
-    Gui, Add, Checkbox, x485 y350 w420 h22 vConfirmBeforeReroll gSaveUXSettings Checked%ConfirmBeforeReroll%, %TXT_ConfirmBeforeReroll%
+    Gui, Add, Text, x460 y177 w480 h35, %TXT_SelectFixedPair%
     Gui, Font, s10 Bold, Segoe UI
-    Gui, Add, Button, x460 y382 w295 h40 gStartSelectedReroll, %TXT_StartSelectedReroll%
-    Gui, Add, Button, x765 y382 w85 h40 gStope, %TXT_BtnStop%
-    Gui, Add, Button, x860 y382 w80 h40 gReset, %TXT_BtnRestart%
+    Gui, Add, Button, x460 y217 w295 h40 gRerollProperties, %TXT_StartSelectedReroll%
+    Gui, Add, Button, x765 y217 w85 h40 gStope, %TXT_BtnStop%
+    Gui, Add, Button, x860 y217 w80 h40 gReset, %TXT_BtnRestart%
+    Gui, Font, s9 Norm, Segoe UI
+    Gui, Add, Checkbox, x460 y276 w20 h20 vRequireTargetValues gToggleTargetValueControls Checked%RequireTargetValues%
+    Gui, Add, Text, x485 y278 w420 h20, %TXT_MatchPropertyValues%
+    Gui, Add, Checkbox, x485 y305 w440 h22 vAutoMaxTargetValues gToggleTargetValueControls Checked%AutoMaxTargetValues%, %TXT_AutoMaxTarget%
+    Gui, Add, Text, x485 y340 w90 h20, %TXT_TargetValue1%
+    Gui, Add, Edit, x575 y336 w80 h22 vTargetValue1, %TargetValue1%
+    Gui, Add, Text, x685 y340 w90 h20, %TXT_TargetValue2%
+    Gui, Add, Edit, x775 y336 w80 h22 vTargetValue2, %TargetValue2%
+    Gui, Add, Checkbox, x485 y378 w420 h22 vConfirmBeforeReroll gSaveUXSettings Checked%ConfirmBeforeReroll%, %TXT_ConfirmBeforeReroll%
 
     ; All automation functions are available in the same view.
     Gui, Font, c535353 s12 Bold, Segoe UI
@@ -770,14 +767,6 @@ CreateGUI:
     Gui, Add, StatusBar
     Gui, Show, w980 h780, %WINTITLE%
 
-    if (TargetProperty1Id != "") {
-        selectedDisplay1 := GetPropertyDisplayName(TargetProperty1Id, CurrentLanguage)
-        GuiControl, ChooseString, TargetProperty1Display, %selectedDisplay1%
-    }
-    if (TargetProperty2Id != "") {
-        selectedDisplay2 := GetPropertyDisplayName(TargetProperty2Id, CurrentLanguage)
-        GuiControl, ChooseString, TargetProperty2Display, %selectedDisplay2%
-    }
     GoSub, UpdatePresetList
     GoSub, ToggleTargetValueControls
     SetTimer, RefreshConfigurationStatus, 500
@@ -1700,6 +1689,7 @@ menuHandler(itemName) {
     global SelectedProperties := itemName
     global RequireTargetValues, TargetValue1, TargetValue2, AutoMaxTargetValues
     global RecognitionLanguage, OCRTestSucceeded, ConfirmBeforeReroll, CurrentLanguage
+    global TargetProperty1Id, TargetProperty2Id, presetFile
     global X7, Y7
     global TXT_Msg_InvalidTargetValues
     global TXT_OCRSafetyWarning, TXT_StartConfirmation
@@ -1724,6 +1714,15 @@ menuHandler(itemName) {
         Properties := StrSplit(itemName, " - ")
         Property1 := Trim(Properties[1])
         Property2 := Trim(Properties[2])
+    }
+
+    ; Keep the selected fixed pair as stable IDs. Target value 1 and 2 always
+    ; follow the first and second properties in the chosen menu entry.
+    if (propertyId1 != "" && propertyId2 != "") {
+        TargetProperty1Id := propertyId1
+        TargetProperty2Id := propertyId2
+        IniWrite, %TargetProperty1Id%, %presetFile%, Settings, TargetProperty1
+        IniWrite, %TargetProperty2Id%, %presetFile%, Settings, TargetProperty2
     }
 
     Gui, Submit, NoHide
@@ -1945,13 +1944,9 @@ PresetChange:
     IniRead, property2IdVal, %selectedPresetFile%, %selectedPresetSection%, TargetProperty2, __MISSING__
     if (property1IdVal != "__MISSING__" && PropertyCatalog.HasKey(property1IdVal)) {
         TargetProperty1Id := property1IdVal
-        property1Display := GetPropertyDisplayName(TargetProperty1Id, CurrentLanguage)
-        GuiControl, ChooseString, TargetProperty1Display, %property1Display%
     }
     if (property2IdVal != "__MISSING__" && PropertyCatalog.HasKey(property2IdVal)) {
         TargetProperty2Id := property2IdVal
-        property2Display := GetPropertyDisplayName(TargetProperty2Id, CurrentLanguage)
-        GuiControl, ChooseString, TargetProperty2Display, %property2Display%
     }
     OCRTestSucceeded := 0
     IniWrite, 0, %presetFile%, Settings, OCRTestSucceeded

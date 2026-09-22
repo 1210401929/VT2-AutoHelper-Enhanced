@@ -23,6 +23,16 @@ AssertTrue("legacy English menu pair maps to standard IDs"
 legacyChineseMapped := ResolveLegacyPropertyPair("攻击速度 - 对鼠人攻击力", legacyChinese1, legacyChinese2)
 AssertTrue("legacy Chinese menu pair maps to standard IDs"
     , legacyChineseMapped && legacyChinese1 = "attack_speed" && legacyChinese2 = "power_vs_skaven")
+AssertLegacyPair("fixed melee pair maps to stable IDs"
+    , "Attack Speed - Block Cost Reduction", "attack_speed", "block_cost_reduction")
+AssertLegacyPair("fixed ranged pair maps to stable IDs"
+    , "vs Skaven - vs Infantry", "power_vs_skaven", "power_vs_infantry")
+AssertLegacyPair("fixed necklace pair maps to stable IDs"
+    , "Stamina - Health", "stamina", "health")
+AssertLegacyPair("fixed charm pair maps to stable IDs"
+    , "Attack Speed - Crit Power", "attack_speed", "crit_power")
+AssertLegacyPair("fixed trinket pair maps to stable IDs"
+    , "Cooldown - Revive Speed", "cooldown_reduction", "revive_speed")
 
 AssertEquivalent("5 == 5.0", "5", "5.0")
 AssertEquivalent("5 == 5.00", "5", "5.00")
@@ -208,6 +218,11 @@ AssertRerollInputs(label, ocrText, target1Input, target2Input, expected) {
         && RerollResultMatches(ocrText, "Attack Speed", "Crit Chance", true
             , target1, target2, current1, current1Found, current2, current2Found)
     AssertTrue(label, actual = expected)
+}
+
+AssertLegacyPair(label, pairText, expectedId1, expectedId2) {
+    mapped := ResolveLegacyPropertyPair(pairText, actualId1, actualId2)
+    AssertTrue(label, mapped && actualId1 = expectedId1 && actualId2 = expectedId2)
 }
 
 AssertRerollNamedInputs(label, ocrText, property1, property2, target1Input, target2Input, expected) {
