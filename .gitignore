@@ -1,0 +1,14 @@
+# Local release packages and generated executables
+/release/
+
+# OCR captures generated while testing a selected screen region
+/AutoHelper/debug/
+
+# The standalone memory-monitor experiment is maintained separately
+/VT2DataMonitor/
+
+# Local compilation checks
+/AutoHelper/AutoHelper.*.exe
+
+# Third-party AutoHotkey installer (download separately from the official site)
+/AutoHelper/AutoHotkey_1.1.37.02_setup.exe
