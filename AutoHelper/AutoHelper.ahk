@@ -1800,8 +1800,8 @@ menuHandler(itemName) {
 
         ; Display OCR results and parsed values when value matching is enabled.
         if (RequireTargetValues) {
-            current1Text := current1Found ? FormatPropertyValue(current1) : "?"
-            current2Text := current2Found ? FormatPropertyValue(current2) : "?"
+            current1Text := (current1Found && StrLen(current1) > 0) ? FormatPropertyValue(current1) : "?"
+            current2Text := (current2Found && StrLen(current2) > 0) ? FormatPropertyValue(current2) : "?"
             target1Text := AutoMaxTargetValues ? (maximum1 != "" ? FormatPropertyValue(maximum1) : "MAX") : FormatPropertyValue(target1)
             target2Text := AutoMaxTargetValues ? (maximum2 != "" ? FormatPropertyValue(maximum2) : "MAX") : FormatPropertyValue(target2)
             cycleText := (LoopCount != "" && LoopCount > 0) ? CycleCount "/" LoopCount : CycleCount " (infinite)"

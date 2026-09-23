@@ -41,6 +41,8 @@ AssertEquivalent("5 == 05.0", "5", "05.0")
 AssertEquivalent("5 == 5,0", "5", "5,0")
 AssertComparison("4.9 < 5", "4.9", "5", false)
 AssertComparison("5.1 >= 5", "5.1", "5", true)
+AssertTrue("empty display value is not formatted as zero", FormatPropertyValue("") = "")
+AssertTrue("real numeric zero is still displayed as zero", FormatPropertyValue(0) = "0")
 
 AssertPropertyValue("plus and percent", "+5.0% Attack Speed", "Attack Speed", 5.0, true)
 AssertPropertyValue("decimal comma", "5,0% Attack Speed", "Attack Speed", 5.0, true)
@@ -147,6 +149,20 @@ AssertMaximumReroll("automatic maximum rejects one value below maximum", rangeMa
 AssertMaximumReroll("automatic maximum rejects missing ranges", normalOrder, false)
 AssertMaximumReroll("automatic maximum ignores property line order"
     , "+5% Crit Chance (3% - 5%)`n+5% Attack Speed (3% - 5%)", true)
+partialMaximumText := "+5% Attack Speed (3% - 5%)`n+?.?% Crit Chance (3% - 5%)"
+partialMaximumResult := RerollResultMatchesMaximum(partialMaximumText, "Attack Speed", "Crit Chance"
+    , partialCurrent1, partialFound1, partialMaximum1
+    , partialCurrent2, partialFound2, partialMaximum2)
+AssertTrue("automatic maximum keeps a parsed first value when the second value fails"
+    , !partialMaximumResult && partialFound1 && partialCurrent1 = 5 && partialMaximum1 = 5
+        && !partialFound2 && StrLen(partialCurrent2) = 0 && StrLen(partialMaximum2) = 0)
+noRangeMaximumResult := RerollResultMatchesMaximum(normalOrder, "Attack Speed", "Crit Chance"
+    , noRangeCurrent1, noRangeFound1, noRangeMaximum1
+    , noRangeCurrent2, noRangeFound2, noRangeMaximum2)
+AssertTrue("automatic maximum displays parsed values instead of zero when ranges are absent"
+    , !noRangeMaximumResult && noRangeFound1 && noRangeCurrent1 = 5
+        && noRangeFound2 && noRangeCurrent2 = 5
+        && StrLen(noRangeMaximum1) = 0 && StrLen(noRangeMaximum2) = 0)
 
 if (TestFailures) {
     FileAppend, % "FAILED: " TestFailures " test(s).`n", *

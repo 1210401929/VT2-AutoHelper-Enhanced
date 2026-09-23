@@ -352,19 +352,34 @@ RerollResultMatchesMaximum(ocrText, property1, property2
     record1 := FindParsedProperty(ocrText, property1, current1Found)
     record2 := FindParsedProperty(ocrText, property2, current2Found)
 
+    ; Publish every reliably parsed current value immediately. Previously the
+    ; values were assigned only after both properties and both ranges passed
+    ; validation. If just one property/range was missing, its found flag could
+    ; be true while its output value was still blank, which the UI formatted
+    ; as a misleading zero.
+    if (current1Found) {
+        current1 := record1.currentValue
+        if (record1.rangeFound)
+            maximum1 := record1.maxValue
+    }
+    if (current2Found) {
+        current2 := record2.currentValue
+        if (record2.rangeFound)
+            maximum2 := record2.maxValue
+    }
+
     if (!current1Found || !current2Found)
         return false
     if (!record1.rangeFound || !record2.rangeFound)
         return false
 
-    current1 := record1.currentValue
-    current2 := record2.currentValue
-    maximum1 := record1.maxValue
-    maximum2 := record2.maxValue
     return (record1.isMaxKnown && record1.isMax && record2.isMaxKnown && record2.isMax)
 }
 
 FormatPropertyValue(value) {
+    ; Never convert an absent OCR value into the numeric value zero.
+    if (StrLen(value) = 0)
+        return ""
     formatted := Format("{:.6f}", value + 0)
     formatted := RegExReplace(formatted, "0+$")
     formatted := RegExReplace(formatted, "\.$")
